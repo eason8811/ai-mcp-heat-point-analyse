@@ -12,9 +12,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @ConfigurationProperties("heat-point")
-public class RetrofitConfigProperties {
+public class HeatPointConfigProperties {
     /**
      * 根 URL
      */
     private String baseUrl;
+    /**
+     * Cookie 信息 ( String 格式 )
+     */
+    private String cookieString;
 }

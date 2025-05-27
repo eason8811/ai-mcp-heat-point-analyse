@@ -13,7 +13,7 @@ import xin.eason.infrastructure.gateway.IHeatPointWebHandler;
  * Retrofit 配置类
  */
 @Configuration
-@EnableConfigurationProperties(RetrofitConfigProperties.class)
+@EnableConfigurationProperties(HeatPointConfigProperties.class)
 public class RetrofitConfig {
 
     /**
@@ -23,7 +23,7 @@ public class RetrofitConfig {
      * @return {@link Retrofit} 的 Bean 对象
      */
     @Bean
-    public Retrofit retrofit(RetrofitConfigProperties properties) {
+    public Retrofit retrofit(HeatPointConfigProperties properties) {
         return new Retrofit.Builder()
                 .baseUrl(properties.getBaseUrl())
                 .addConverterFactory(JacksonConverterFactory.create(new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)))
