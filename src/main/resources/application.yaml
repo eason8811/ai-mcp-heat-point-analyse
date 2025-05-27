@@ -22,3 +22,8 @@ server:
       enabled: true
       force: true
   port: 8081
+
+
+heat-point:
+  base-url: https://weibo.com
+  
