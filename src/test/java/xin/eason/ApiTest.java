@@ -1,10 +1,14 @@
 package xin.eason;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import retrofit2.Response;
+import xin.eason.api.IHeatPointAnalyseService;
+import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
+import xin.eason.domain.model.enums.HeatPointCategory;
 import xin.eason.infrastructure.dto.WbEntertainmentResponseDTO;
 import xin.eason.infrastructure.dto.WbHotSearchResponseDTO;
 import xin.eason.infrastructure.dto.WbNewsResponseDTO;
@@ -19,6 +23,9 @@ public class ApiTest {
 
     @Autowired
     private IHeatPointWebHandler heatPointWebHandler;
+
+    @Autowired
+    private IHeatPointAnalyseService heatPointAnalyseService;
 
     /**
      * 测试 Retrofit 发送网络请求的接口
@@ -92,5 +99,26 @@ public class ApiTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void testQueryAllDataApi() {
+        AnalyseHeatPointAggregate aggregate = heatPointAnalyseService.queryAllHeatPoints();
+        log.info("获取热点信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(aggregate));
+    }
+
+    @Test
+    public void testQueryByCategory() {
+        AnalyseHeatPointAggregate aggregate = heatPointAnalyseService.queryHeatPointsByCategory(HeatPointCategory.NEWS);
+        log.info("获取热点信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(aggregate));
+    }
+
+    @Test
+    public void testQueryByCategoryLimit() {
+        AnalyseHeatPointAggregate aggregate = heatPointAnalyseService.queryHeatPointByCategory(HeatPointCategory.HOT_SEARCH, 5);
+        log.info("获取热点信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(aggregate));
     }
 }

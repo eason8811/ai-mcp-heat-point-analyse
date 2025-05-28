@@ -2,6 +2,7 @@ package xin.eason.infrastructure.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
 import java.util.List;
@@ -76,10 +77,6 @@ public class WbEntertainmentResponseDTO {
          */
         private long onBoardTime;
         /**
-         * 主热搜中的位置
-         */
-        private int outIndex;
-        /**
          * 文娱热搜中的实际位置
          */
         @JsonProperty("realpos")
@@ -88,7 +85,7 @@ public class WbEntertainmentResponseDTO {
          * 关联的明星列表
          */
         @JsonProperty("star_name")
-        Object starNameList;
+        JsonNode starNameList;
         /**
          * 主题信息 Map 形式
          */

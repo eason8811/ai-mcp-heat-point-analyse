@@ -8,8 +8,8 @@ import lombok.Getter;
  */
 @Getter
 public enum HeatPointCategory {
-    HOT(0, "热搜"),
-    ENTERTAIN(1, "文娱"),
+    HOT_SEARCH(0, "热搜"),
+    ENTERTAINMENT(1, "文娱"),
     NEWS(2, "要闻");
 
     /**

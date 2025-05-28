@@ -10,6 +10,9 @@ import xin.eason.infrastructure.dto.WbHotSearchResponseDTO;
 import xin.eason.infrastructure.dto.WbNewsResponseDTO;
 import xin.eason.infrastructure.dto.WbStandardResult;
 
+/**
+ * 热点查询网络处理器, 用于实际发送网络请求
+ */
 @Component
 public interface IHeatPointWebHandler {
 
