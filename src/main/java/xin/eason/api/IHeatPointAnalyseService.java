@@ -36,26 +36,46 @@ public interface IHeatPointAnalyseService {
     AnalyseHeatPointAggregate queryHeatPointByCategory(HeatPointCategory category, Integer limit);
 
     /**
-     * 根据热点的 URL 查询热点的详细信息
+     * 根据热点的 URL 查询热点帖子的详细信息 ( 默认前 10 条 )
      *
      * @param url 热点 URL
-     * @return 热点详细信息对象
+     * @return 热点详细信息对象列表
      */
-    HeatPointDetailEntity queryHeatPointDetailByUrl(String url);
+    List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url);
 
     /**
-     * 根据查询热点数据得到的响应对象, 提取其中的热点 URL 并查询热点详细信息
+     * 根据热点的 URL 查询热点帖子的前 N 条详细信息
      *
-     * @param response 热搜数据响应对象
-     * @return 热点详细信息对象
+     * @param url 热点 URL
+     * @param limit 返回前 N 条详细内容
+     * @return 热点详细信息对象列表
      */
-    HeatPointDetailEntity queryHeatPointDetailByResponse(AnalyseHeatPointAggregate response);
+    List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url, int limit);
 
     /**
-     * 批量的根据查询热点数据得到的响应对象, 提取其中的热点 URL 并查询热点详细信息
+     * 根据查询热点数据聚合对象, 查询其中的所有类别的热点帖子详细信息 ( 默认前 10 条 )
      *
-     * @param responseList 热搜数据响应对象的 List
-     * @return 热点详细信息对象的 List
+     * @param aggregate 热点数据聚合对象
+     * @return 热点详细信息对象列表
      */
-    List<HeatPointDetailEntity> queryHeatPointDetailByResponseBatch(List<AnalyseHeatPointAggregate> responseList);
+    List<HeatPointDetailEntity> queryHeatPointDetail(AnalyseHeatPointAggregate aggregate);
+
+    /**
+     * 根据查询热点数据聚合对象, 查询其中的置顶类别的热点帖子详细信息 ( 默认前 10 条 )
+     *
+     * @param aggregate 热点数据聚合对象
+     * @param category  热点板块类别
+     * @return 热点详细信息对象列表
+     */
+    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category);
+
+    /**
+     * 根据查询热点数据聚合对象, 查询其中的置顶类别的前 N 条热点帖子详细信息
+     *
+     * @param aggregate 热点数据聚合对象
+     * @param category  热点板块类别
+     * @param limit     返回前 N 条详细内容
+     * @return 热点详细信息对象列表
+     */
+    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category, int limit);
 }

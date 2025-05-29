@@ -2,10 +2,15 @@ package xin.eason.infrastructure.adapter.port;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 import retrofit2.Response;
 import xin.eason.domain.adapter.port.IWebPort;
 import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
+import xin.eason.domain.model.entity.HeatPointDetailEntity;
 import xin.eason.domain.model.entity.WbEntertainmentEntity;
 import xin.eason.domain.model.entity.WbHotSearchEntity;
 import xin.eason.domain.model.entity.WbNewsEntity;
@@ -18,6 +23,7 @@ import xin.eason.infrastructure.gateway.IHeatPointWebHandler;
 import xin.eason.types.config.HeatPointConfigProperties;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +79,98 @@ public class WbWebPort implements IWebPort {
         if (category.getCode() == HeatPointCategory.NEWS.getCode())
             return queryNewsData(aggregate);
         return null;
+    }
+
+    /**
+     * 根据热点的 URL 查询热点的详细信息
+     *
+     * @param url 热点 URL
+     * @return 热点详细信息对象列表
+     */
+    @Override
+    public List<HeatPointDetailEntity> queryHeatPointsDetail(String url) throws IOException {
+        return queryHeatPointsDetail(url, 10);
+    }
+
+    /**
+     * 根据热点的 URL 查询热点帖子的前 N 条详细信息
+     *
+     * @param url   热点 URL
+     * @param limit 返回前 N 条详细内容
+     * @return 热点详细信息对象列表
+     */
+    @Override
+    public List<HeatPointDetailEntity> queryHeatPointsDetail(String url, int limit) throws IOException {
+        // 获取 Web 请求响应
+        Response<String> response = webHandler.wbQueryHotSearchDetail(url, properties.getCookieString()).execute();
+        if (!response.isSuccessful()) {
+            log.error("请求出错! 响应代码: {}, 响应体: {}", response.code(), response.errorBody().string());
+            return null;
+        }
+        // 以字符串形式读取 HTML 代码
+        String responseBody = response.body();
+        if (responseBody == null) {
+            log.error("响应体为空! 响应代码: {},", response.code());
+            return null;
+        }
+        // 将字符串形式将 HTML 字符串解析为 Document 文档
+        Document document = Jsoup.parse(responseBody);
+        // 提取所有 class = txt 且 node-type 属性为 feed_list_content 的节点, 形成节点列表
+        Elements elements = document.body().select("div.content[node-type='like'] > p.txt[node-type='feed_list_content']");
+
+        List<Element> elementList = new ArrayList<>();
+        // 遍历所有节点, 找出下一个兄弟节点存在属性 node-type 且属性值为 feed_list_content_full 的节点
+        // 这样的节点就是这条帖子的全文节点, 将其添加到 elementList 列表中
+        for (Element element : elements) {
+            Element next = element.nextElementSibling();
+            if (next != null && next.hasAttr("node-type") && "feed_list_content_full".equals(next.attr("node-type"))) {
+                elementList.add(next);
+                continue;
+            }
+            elementList.add(element);
+        }
+
+        // 获取每个帖子的 转发, 评论, 点赞 节点
+        Elements elementsSocialInfo = document.body().select("div.card-act > ul > li > a");
+        // 装入列表之中
+        List<Map<String, Element>> socialInfoList = new ArrayList<>();
+        for (int i = 0; i < elementsSocialInfo.size(); i += 3) {
+            HashMap<String, Element> hashMap = new HashMap<>();
+            hashMap.put("send", elementsSocialInfo.get(i));
+            hashMap.put("comment", elementsSocialInfo.get(i + 1));
+            hashMap.put("like", elementsSocialInfo.get(i + 2));
+            socialInfoList.add(hashMap);
+        }
+
+        if (elementList.size() != socialInfoList.size()) {
+            log.error("解析 HTML 过程错误! 帖子数量与转评赞数量不符! 帖子数量: {}, 转评赞数量: {}", elementList.size(), socialInfoList.size());
+            return null;
+        }
+
+        // 构建热点细节实体对象列表
+        List<HeatPointDetailEntity> heatPointDetailEntityList = new ArrayList<>();
+        for (int i = 0; i < elementList.size() && i < limit; i++) {
+            Element contentElement = elementList.get(i);
+            Map<String, Element> socialInfoMap = socialInfoList.get(i);
+            // 判断有没有 用户名 这个属性, 没有的话抛出警告
+            if (!contentElement.hasAttr("nick-name"))
+                log.warn("内容索引: {}, 用户名缺失! 热点 URL: {}", i, url);
+
+            // 解析 转评赞 数量
+            int sendNum = convertDetailDataToInteger(url, contentElement, socialInfoMap.get("send").text(), "send");
+            int commentNum = convertDetailDataToInteger(url, contentElement, socialInfoMap.get("comment").text(), "comment");
+            int likeNum = convertDetailDataToInteger(url, contentElement, socialInfoMap.get("like").text(), "like");
+
+            HeatPointDetailEntity entity = HeatPointDetailEntity.builder()
+                    .userName(contentElement.attr("nick-name"))
+                    .content(contentElement.text())
+                    .send(sendNum)
+                    .comment(commentNum)
+                    .like(likeNum)
+                    .build();
+            heatPointDetailEntityList.add(entity);
+        }
+        return heatPointDetailEntityList;
     }
 
     /**
@@ -232,5 +330,23 @@ public class WbWebPort implements IWebPort {
         return WbNewsEntity.builder()
                 .topic(row.getWord())
                 .build();
+    }
+
+    /**
+     * 将 转评赞 的数据转换为整数, 无法转换的数据置零
+     *
+     * @param url            当前访问的热点 URL
+     * @param contentElement 当前热点内容的 HTML 元素
+     * @param contentText    转评赞内容文本
+     * @param key            转评赞 -> send, comment, like
+     * @return 转换后的 转评赞 数量的整数形式
+     */
+    private static int convertDetailDataToInteger(String url, Element contentElement, String contentText, String key) {
+        try {
+            return Integer.parseInt(contentText);
+        } catch (NumberFormatException e) {
+            log.debug("在 URL: {} 的热点中, 内容为: {} 的热点详细信息的 {} 数据无法转换为整数, 原数据为: {}", url, contentElement.text(), key, contentText);
+            return 0;
+        }
     }
 }

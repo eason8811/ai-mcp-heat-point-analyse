@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service;
 import xin.eason.api.IHeatPointAnalyseService;
 import xin.eason.domain.adapter.port.IWebPort;
 import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
-import xin.eason.domain.model.entity.HeatPointDetailEntity;
-import xin.eason.domain.model.entity.WbEntertainmentEntity;
-import xin.eason.domain.model.entity.WbHotSearchEntity;
-import xin.eason.domain.model.entity.WbNewsEntity;
+import xin.eason.domain.model.entity.*;
 import xin.eason.domain.model.enums.HeatPointCategory;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -93,35 +95,209 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
     }
 
     /**
-     * 根据热点的 URL 查询热点的详细信息
+     * 根据热点的 URL 查询热点帖子的详细信息 ( 默认前 10 条 )
      *
      * @param url 热点 URL
-     * @return 热点详细信息对象
+     * @return 热点详细信息对象列表
      */
     @Override
-    public HeatPointDetailEntity queryHeatPointDetailByUrl(String url) {
+    public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url) {
+        try {
+            log.info("正在获取 URL: {} 的热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8));
+            return webPort.queryHeatPointsDetail(url);
+        } catch (IOException e) {
+            log.error("获取热点细节信息异常! 异常信息: {}", e.getMessage(), e);
+        }
         return null;
     }
 
     /**
-     * 根据查询热点数据得到的响应对象, 提取其中的热点 URL 并查询热点详细信息
+     * 根据热点的 URL 查询热点帖子的前 N 条详细信息
      *
-     * @param response 热搜数据响应对象
-     * @return 热点详细信息对象
+     * @param url   热点 URL
+     * @param limit 返回前 N 条详细内容
+     * @return 热点详细信息对象列表
      */
     @Override
-    public HeatPointDetailEntity queryHeatPointDetailByResponse(AnalyseHeatPointAggregate response) {
+    public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url, int limit) {
+        try {
+            log.info("正在获取 URL: {} 的前 {} 热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8), limit);
+            return webPort.queryHeatPointsDetail(url, limit);
+        } catch (IOException e) {
+            log.error("获取热点细节信息异常! 异常信息: {}", e.getMessage(), e);
+        }
         return null;
     }
 
     /**
-     * 批量的根据查询热点数据得到的响应对象, 提取其中的热点 URL 并查询热点详细信息
+     * 根据查询热点数据聚合对象, 查询其中的所有类别的热点帖子详细信息 ( 默认前 10 条 )
      *
-     * @param responseList 热搜数据响应对象的 List
-     * @return 热点详细信息对象的 List
+     * @param aggregate 热点数据聚合对象
+     * @return 热点详细信息对象列表
      */
     @Override
-    public List<HeatPointDetailEntity> queryHeatPointDetailByResponseBatch(List<AnalyseHeatPointAggregate> responseList) {
-        return List.of();
+    public List<HeatPointDetailEntity> queryHeatPointDetail(AnalyseHeatPointAggregate aggregate) {
+        List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
+        List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
+        List<WbEntertainmentEntity> entertainmentEntityList = aggregate.getEntertainmentEntityList();
+        List<WbNewsEntity> newsEntityList = aggregate.getNewsEntityList();
+
+        // 热点帖子详细信息列表
+        List<HeatPointDetailEntity> heatPointDetailEntityList = new ArrayList<>();
+        // 查询所有类别板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+        createUrlAndQuery(hotSearchEntityTopList, heatPointDetailEntityList, HeatPointCategory.HOT_SEARCH);
+        createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, HeatPointCategory.HOT_SEARCH);
+        createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, HeatPointCategory.ENTERTAINMENT);
+        createUrlAndQuery(newsEntityList, heatPointDetailEntityList, HeatPointCategory.NEWS);
+        return heatPointDetailEntityList;
+    }
+
+
+    /**
+     * 根据查询热点数据聚合对象, 查询其中的置顶类别的热点帖子详细信息 ( 默认前 10 条 )
+     *
+     * @param aggregate 热点数据聚合对象
+     * @param category  热点板块类别
+     * @return 热点详细信息对象列表
+     */
+    @Override
+    public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category) {
+        if (aggregate == null)
+            return null;
+        List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
+        List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
+        List<WbEntertainmentEntity> entertainmentEntityList = aggregate.getEntertainmentEntityList();
+        List<WbNewsEntity> newsEntityList = aggregate.getNewsEntityList();
+
+        // 热点帖子详细信息列表
+        List<HeatPointDetailEntity> heatPointDetailEntityList = new ArrayList<>();
+        if (category.getCode() == HeatPointCategory.HOT_SEARCH.getCode() && (hotSearchEntityTopList != null || hotSearchEntityList != null)) {
+            // 查询热搜板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(hotSearchEntityTopList, heatPointDetailEntityList, category);
+            createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, category);
+            return heatPointDetailEntityList;
+        }
+        if (category.getCode() == HeatPointCategory.ENTERTAINMENT.getCode() && entertainmentEntityList != null) {
+            // 查询文娱板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, category);
+            return heatPointDetailEntityList;
+        }
+        if (category.getCode() == HeatPointCategory.NEWS.getCode() && newsEntityList != null) {
+            // 查询要闻板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(newsEntityList, heatPointDetailEntityList, category);
+            return heatPointDetailEntityList;
+        }
+        // 无法匹配类别, 则返回 null
+        return null;
+    }
+
+    /**
+     * 根据查询热点数据聚合对象, 查询其中的置顶类别的前 N 条热点帖子详细信息
+     *
+     * @param aggregate 热点数据聚合对象
+     * @param category  热点板块类别
+     * @param limit     返回前 N 条详细内容
+     * @return 热点详细信息对象列表
+     */
+    @Override
+    public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category, int limit) {
+        List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
+        List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
+        List<WbEntertainmentEntity> entertainmentEntityList = aggregate.getEntertainmentEntityList();
+        List<WbNewsEntity> newsEntityList = aggregate.getNewsEntityList();
+
+        // 热点帖子详细信息列表
+        List<HeatPointDetailEntity> heatPointDetailEntityList = new ArrayList<>();
+        if (category.getCode() == HeatPointCategory.HOT_SEARCH.getCode() && (hotSearchEntityTopList != null || hotSearchEntityList != null)) {
+            // 查询热搜板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(hotSearchEntityTopList, heatPointDetailEntityList, category, limit);
+            createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, category, limit);
+            return heatPointDetailEntityList;
+        }
+        if (category.getCode() == HeatPointCategory.ENTERTAINMENT.getCode() && entertainmentEntityList != null) {
+            // 查询文娱板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, category, limit);
+            return heatPointDetailEntityList;
+        }
+        if (category.getCode() == HeatPointCategory.NEWS.getCode() && newsEntityList != null) {
+            // 查询要闻板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
+            createUrlAndQuery(newsEntityList, heatPointDetailEntityList, category, limit);
+            return heatPointDetailEntityList;
+        }
+        // 无法匹配类别, 则返回 null
+        return null;
+    }
+
+    /**
+     * 构造 URL 然后查询热点细节信息列表, 设置好热点信息列表中所有元素的 category 后装入传入热点细节的列表
+     *
+     * @param heatPointEntityList       热点实体列表
+     * @param heatPointDetailEntityList 热点细节实体列表
+     * @param <T>                       传入的热点类型的泛型 ( {@link AbstractWbHeatPointEntity} 的子类 )
+     */
+    private <T extends AbstractWbHeatPointEntity> void createUrlAndQuery(List<T> heatPointEntityList, List<HeatPointDetailEntity> heatPointDetailEntityList, HeatPointCategory category) {
+        // 若为 null 则直接返回
+        if (heatPointEntityList == null || heatPointDetailEntityList == null)
+            return;
+        // 组装 URL
+        for (T heatPointEntity : heatPointEntityList) {
+            String baseUrl = "https://s.weibo.com/weibo";
+            String query = URLEncoder.encode(heatPointEntity.getTopic(), StandardCharsets.UTF_8);
+            String categoryId = null;
+            switch (category) {
+                case HOT_SEARCH -> categoryId = "31";
+                case ENTERTAINMENT -> categoryId = "152";
+                case NEWS -> categoryId = "153";
+            }
+            String page = "1";
+            String url = baseUrl + "?" + "q=" + query + "&t=" + categoryId + "&page=" + page;
+            // 获取热点细节信息列表
+            List<HeatPointDetailEntity> resultList = queryHeatPointDetailByUrl(url);
+            // 设置好类别之后放入列表之中
+            resultList.forEach(heatPointDetailEntity -> heatPointDetailEntity.setCategory(category));
+            heatPointDetailEntityList.addAll(resultList);
+        }
+    }
+
+    /**
+     * 构造 URL 然后查询热点细节信息列表, 设置好热点信息列表中所有元素的 category 后装入, 将前 N 条数据传入热点细节的列表
+     *
+     * @param heatPointEntityList 热点实体列表
+     * @param detailEntityList    热点细节实体列表
+     * @param category            热点板块类别
+     * @param limit               限定前 N 条数据
+     * @param <T>                 传入的热点类型的泛型 ( {@link AbstractWbHeatPointEntity} 的子类 )
+     */
+    private <T extends AbstractWbHeatPointEntity> void createUrlAndQuery(List<T> heatPointEntityList, List<HeatPointDetailEntity> detailEntityList, HeatPointCategory category, int limit) {
+        // 若为 null 则直接返回
+        if (heatPointEntityList == null || detailEntityList == null)
+            return;
+
+        for (T heatPointEntity : heatPointEntityList) {
+            int page = 1;
+            int total = 0;
+            while (true) {
+                String baseUrl = "https://s.weibo.com/weibo";
+                String query = URLEncoder.encode(heatPointEntity.getTopic(), StandardCharsets.UTF_8);
+                String categoryId = null;
+                switch (category) {
+                    case HOT_SEARCH -> categoryId = "31";
+                    case ENTERTAINMENT -> categoryId = "152";
+                    case NEWS -> categoryId = "153";
+                }
+                String url = baseUrl + "?" + "q=" + query + "&t=" + categoryId + "&page=" + page;
+                // 获取热点细节信息列表
+                List<HeatPointDetailEntity> resultList = queryHeatPointDetailByUrl(url);
+                // 设置好类别
+                resultList.forEach(heatPointDetailEntity -> heatPointDetailEntity.setCategory(category));
+                if (total + resultList.size() >= limit) {
+                    detailEntityList.addAll(resultList.subList(0, limit - total));
+                    break;
+                }
+                detailEntityList.addAll(resultList);
+                total += resultList.size();
+                page++;
+            }
+        }
     }
 }

@@ -77,11 +77,25 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- Retrofit String 转换器 -->
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-scalars</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
         <!-- Retrofit 2 RxJava 适配器-->
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>adapter-rxjava2</artifactId>
             <version>2.9.0</version>
+        </dependency>
+
+        <!-- HTML 解析 -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
         </dependency>
 
     </dependencies>

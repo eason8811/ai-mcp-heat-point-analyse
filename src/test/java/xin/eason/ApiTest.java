@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import retrofit2.Response;
 import xin.eason.api.IHeatPointAnalyseService;
+import xin.eason.domain.adapter.port.IWebPort;
 import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
+import xin.eason.domain.model.entity.HeatPointDetailEntity;
 import xin.eason.domain.model.enums.HeatPointCategory;
 import xin.eason.infrastructure.dto.WbEntertainmentResponseDTO;
 import xin.eason.infrastructure.dto.WbHotSearchResponseDTO;
@@ -16,6 +18,7 @@ import xin.eason.infrastructure.dto.WbStandardResult;
 import xin.eason.infrastructure.gateway.IHeatPointWebHandler;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @SpringBootTest
@@ -26,6 +29,9 @@ public class ApiTest {
 
     @Autowired
     private IHeatPointAnalyseService heatPointAnalyseService;
+
+    @Autowired
+    private IWebPort webPort;
 
     /**
      * 测试 Retrofit 发送网络请求的接口
@@ -120,5 +126,24 @@ public class ApiTest {
         AnalyseHeatPointAggregate aggregate = heatPointAnalyseService.queryHeatPointByCategory(HeatPointCategory.HOT_SEARCH, 5);
         log.info("获取热点信息成功!");
         log.info("结果: \n {}", JSON.toJSONString(aggregate));
+    }
+
+    @Test
+    public void testQueryHeatPointDetailByUrl() {
+        String url = "https://s.weibo.com/weibo?q=%23%E9%9F%A9%E5%9B%BD%E5%8F%91%E7%94%9F%E9%A3%9E%E6%9C%BA%E5%9D%A0%E6%AF%81%E4%BA%8B%E4%BB%B6%23&t=31";
+        List<HeatPointDetailEntity> heatPointDetailEntityList = heatPointAnalyseService.queryHeatPointDetailByUrl(url, 2);
+        log.info("查询热点细节信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(heatPointDetailEntityList));
+    }
+
+    @Test
+    public void testQueryHeatPointDetailByAggregate() {
+        AnalyseHeatPointAggregate aggregate = heatPointAnalyseService.queryHeatPointByCategory(HeatPointCategory.ENTERTAINMENT, 1);
+        log.info("获取热点信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(aggregate));
+
+        List<HeatPointDetailEntity> heatPointDetailEntityList = heatPointAnalyseService.queryHeatPointDetailByCategory(aggregate, HeatPointCategory.ENTERTAINMENT);
+        log.info("查询热点细节信息成功!");
+        log.info("结果: \n {}", JSON.toJSONString(heatPointDetailEntityList));
     }
 }

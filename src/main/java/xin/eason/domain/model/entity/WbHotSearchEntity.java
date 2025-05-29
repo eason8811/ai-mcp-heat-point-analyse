@@ -1,18 +1,15 @@
 package xin.eason.domain.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 微博热搜板块数据实体, 表示一行数据
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class WbHotSearchEntity {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class WbHotSearchEntity extends AbstractWbHeatPointEntity{
     /**
      * 情绪
      */
@@ -22,10 +19,6 @@ public class WbHotSearchEntity {
      */
     private String labelName;
     /**
-     * 热搜标题
-     */
-    private String topic;
-    /**
      * 实时搜索人数
      */
     private int searchNum;
@@ -33,14 +26,4 @@ public class WbHotSearchEntity {
      * 词条真实排行榜位置
      */
     private int rank;
-
-    /**
-     * {@link WbHotSearchEntity#topic} 字段的 Setter 函数, 删除标题中的 # 符号
-     *
-     * @param topic 热搜标题
-     */
-    public void setTopic(String topic) {
-        topic = topic.replaceAll("#", "");
-        this.topic = topic;
-    }
 }

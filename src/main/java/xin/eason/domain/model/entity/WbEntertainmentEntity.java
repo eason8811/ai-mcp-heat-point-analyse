@@ -1,9 +1,9 @@
 package xin.eason.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -14,10 +14,9 @@ import java.util.*;
  * 微博文娱板块数据实体, 表示一行数据
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class WbEntertainmentEntity {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class WbEntertainmentEntity extends AbstractWbHeatPointEntity{
     /**
      * 文娱类别
      */
@@ -64,10 +63,6 @@ public class WbEntertainmentEntity {
      * 主题信息 Map 形式
      */
     private Map<String, SubjectDetail> subjectDetailMap;
-    /**
-     * 热搜标题
-     */
-    private String topic;
 
     /**
      * 主题详细信息类
@@ -108,16 +103,6 @@ public class WbEntertainmentEntity {
         List<String> tempList = new ArrayList<>();
         starNameList.forEach(starName -> tempList.add(starName.asText()));
         this.starNameList = tempList;
-    }
-
-    /**
-     * {@link WbEntertainmentEntity#topic} 字段的 Setter 函数, 删除标题中的 # 符号
-     *
-     * @param topic 热搜标题
-     */
-    public void setTopic(String topic) {
-        topic = topic.replaceAll("#", "");
-        this.topic = topic;
     }
 
     /**

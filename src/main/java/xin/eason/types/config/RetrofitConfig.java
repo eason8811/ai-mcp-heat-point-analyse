@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 import xin.eason.infrastructure.gateway.IHeatPointWebHandler;
 
 /**
@@ -26,6 +27,7 @@ public class RetrofitConfig {
     public Retrofit retrofit(HeatPointConfigProperties properties) {
         return new Retrofit.Builder()
                 .baseUrl(properties.getBaseUrl())
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(JacksonConverterFactory.create(new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)))
                 .build();
     }
