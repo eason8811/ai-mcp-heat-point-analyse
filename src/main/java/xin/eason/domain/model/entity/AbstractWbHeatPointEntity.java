@@ -1,5 +1,8 @@
 package xin.eason.domain.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,10 +15,13 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AbstractWbHeatPointEntity {
     /**
      * 热搜标题
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的标题")
     private String topic;
 
     /**

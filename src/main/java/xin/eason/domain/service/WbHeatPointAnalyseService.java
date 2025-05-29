@@ -2,6 +2,7 @@ package xin.eason.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import xin.eason.api.IHeatPointAnalyseService;
 import xin.eason.domain.adapter.port.IWebPort;
@@ -14,7 +15,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,6 +36,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
+    @Tool(description = "查询所有板块的热点数据, 并返回热点分析聚合, 其中包含了热搜, 文娱, 要闻三个板块的热点列表, 以及一个热搜板块的置顶热点列表")
     public AnalyseHeatPointAggregate queryAllHeatPoints() {
         try {
             log.info("正在获取所有热点数据...");
@@ -53,6 +54,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
+    @Tool(description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一")
     public AnalyseHeatPointAggregate queryHeatPointsByCategory(HeatPointCategory category) {
         try {
             log.info("正在根据类别获取所有热点数据... 当前类别为: [{}]", category.getDesc());
@@ -71,6 +73,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
+    @Tool(description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一, 并且只返回热点列表的前 limit 条数据")
     public AnalyseHeatPointAggregate queryHeatPointByCategory(HeatPointCategory category, Integer limit) {
         AnalyseHeatPointAggregate aggregate = queryHeatPointsByCategory(category);
         log.info("正在进行列表切片, 获取 [{}] 板块前 {} 条数据...", category.getDesc(), limit);
@@ -101,6 +104,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
+    @Tool(description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表, 列表中的一个元素代表一个帖子")
     public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url) {
         try {
             log.info("正在获取 URL: {} 的热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8));
@@ -119,6 +123,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
+    @Tool(description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表的前 limit 条, 列表中的一个元素代表一个帖子")
     public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url, int limit) {
         try {
             log.info("正在获取 URL: {} 的前 {} 热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8), limit);
@@ -136,6 +141,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
+    @Tool(description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetail(AnalyseHeatPointAggregate aggregate) {
         List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
         List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
@@ -161,6 +167,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
+    @Tool(description = "根据提供的热点分析聚合对象和热点板块类别, 提取其中指定板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category) {
         if (aggregate == null)
             return null;
@@ -200,6 +207,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
+    @Tool(description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 limit 条帖子详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category, int limit) {
         List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
         List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();

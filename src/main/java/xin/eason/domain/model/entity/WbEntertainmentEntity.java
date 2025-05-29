@@ -1,6 +1,9 @@
 package xin.eason.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -16,52 +19,75 @@ import java.util.*;
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class WbEntertainmentEntity extends AbstractWbHeatPointEntity{
     /**
      * 文娱类别
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的类别")
     private String category;
     /**
      * 频道类型列表 ( 源数据使用 | 进行分割 )
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的频道类型列表")
     private List<String> channelTypeList;
     /**
      * 实时搜索人数
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的实时搜索人数")
     private int searchNum;
     /**
      * 合作
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("这个热点是否有合作 (无合作为0)")
     private int cooperate;
     /**
      * 情绪
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的情绪 (无特殊情况为空)")
     private String emotion;
     /**
      * 标签名称
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点的标签名, 表示热点当前相较于其他热点的状态")
     private String labelName;
     /**
      * 词条真实排行位置
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点在排行榜上的名次, 名次越高热点关注度越高")
     private int rank;
     /**
      * 上榜主热搜的时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点上榜主热点排行榜的时间")
     private LocalDateTime onHotSearchBoardTime;
     /**
      * 上榜文娱热搜的时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点上榜本板块排行榜的时间")
     private LocalDateTime onBoardTime;
     /**
      * 关联的明星列表
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("本热点提到的明星名字的列表")
     private List<String> starNameList;
     /**
      * 主题信息 Map 形式
      */
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("热点关联的主题, 以明星名字列表中的明星名字为键, 主题细节信息为值")
     private Map<String, SubjectDetail> subjectDetailMap;
 
     /**
@@ -71,14 +97,19 @@ public class WbEntertainmentEntity extends AbstractWbHeatPointEntity{
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SubjectDetail {
         /**
          * 主题对应的 name 列表
          */
+        @JsonProperty(required = true)
+        @JsonPropertyDescription("主题对应的 name 列表, 作用未知")
         private String nameList;
         /**
          * 主题来源
          */
+        @JsonProperty(required = true)
+        @JsonPropertyDescription("热点的情绪 (无特殊情况为空)")
         private String source;
         /**
          * 主题的类别

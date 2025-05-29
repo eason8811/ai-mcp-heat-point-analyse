@@ -1,5 +1,6 @@
 package xin.eason.domain.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -9,5 +10,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class WbNewsEntity extends AbstractWbHeatPointEntity{
 }
