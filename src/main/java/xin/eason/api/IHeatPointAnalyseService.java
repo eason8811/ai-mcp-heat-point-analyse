@@ -1,6 +1,7 @@
 package xin.eason.api;
 
 import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
+import xin.eason.domain.model.aggregate.HeatPointAggregateRequest;
 import xin.eason.domain.model.entity.HeatPointDetailEntity;
 import xin.eason.domain.model.enums.HeatPointCategory;
 
@@ -58,7 +59,7 @@ public interface IHeatPointAnalyseService {
      * @param aggregate 热点数据聚合对象
      * @return 热点详细信息对象列表
      */
-    List<HeatPointDetailEntity> queryHeatPointDetail(AnalyseHeatPointAggregate aggregate);
+    List<HeatPointDetailEntity> queryHeatPointDetail(HeatPointAggregateRequest requestAggregate);
 
     /**
      * 根据查询热点数据聚合对象, 查询其中的置顶类别的热点帖子详细信息 ( 默认前 10 条 )
@@ -67,7 +68,7 @@ public interface IHeatPointAnalyseService {
      * @param category  热点板块类别
      * @return 热点详细信息对象列表
      */
-    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category);
+    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(HeatPointAggregateRequest requestAggregate, HeatPointCategory category);
 
     /**
      * 根据查询热点数据聚合对象, 查询其中的置顶类别的前 N 条热点帖子详细信息
@@ -77,5 +78,5 @@ public interface IHeatPointAnalyseService {
      * @param limit     返回前 N 条详细内容
      * @return 热点详细信息对象列表
      */
-    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category, int limit);
+    List<HeatPointDetailEntity> queryHeatPointDetailByCategory(HeatPointAggregateRequest requestAggregate, HeatPointCategory category, int limit);
 }

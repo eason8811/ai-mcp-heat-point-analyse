@@ -14,6 +14,9 @@ logging:
     file: UTF-8
   file:
     name: ${spring.application.name}_${spring.application.version}_log.log
+  level:
+    root: info
+    io.modelcontextprotocol.spec.McpSchema: debug
 
 server:
   servlet:
