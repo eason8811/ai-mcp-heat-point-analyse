@@ -1,5 +1,6 @@
 package xin.eason.domain.service;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
@@ -40,7 +41,9 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
     public AnalyseHeatPointAggregate queryAllHeatPoints() {
         try {
             log.info("正在获取所有热点数据...");
-            return webPort.queryHeatPoints();
+            AnalyseHeatPointAggregate aggregate = webPort.queryHeatPoints();
+            log.info("获取完成, 热点分析聚合信息: {}", JSON.toJSONString(aggregate));
+            return aggregate;
         } catch (IOException e) {
             log.error("获取所有热点数据出现异常! 异常信息: {}", e.getMessage(), e);
             return null;
@@ -54,11 +57,13 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
-    @Tool(description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一")
+    @Tool(name = "queryHeatPointsByCategory", description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一")
     public AnalyseHeatPointAggregate queryHeatPointsByCategory(HeatPointCategory category) {
         try {
             log.info("正在根据类别获取所有热点数据... 当前类别为: [{}]", category.getDesc());
-            return webPort.queryHeatPoints(category);
+            AnalyseHeatPointAggregate aggregate = webPort.queryHeatPoints(category);
+            log.info("获取完成, 热点分析聚合信息: {}", JSON.toJSONString(aggregate));
+            return aggregate;
         } catch (IOException e) {
             log.error("获取所有热点数据出现异常! 异常信息: {}", e.getMessage(), e);
             return null;
@@ -73,7 +78,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
-    @Tool(description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一, 并且只返回热点列表的前 limit 条数据")
+    @Tool(name = "queryHeatPointsByCategoryLimit", description = "根据提供的热点板块类别查询对应板块的热点数据, 返回热点分析聚合, 其中含有热搜板块的置顶热点列表和普通热点列表, 或文娱热点列表, 或要闻热点列表其中之一, 并且只返回热点列表的前 limit 条数据")
     public AnalyseHeatPointAggregate queryHeatPointByCategory(HeatPointCategory category, Integer limit) {
         AnalyseHeatPointAggregate aggregate = queryHeatPointsByCategory(category);
         log.info("正在进行列表切片, 获取 [{}] 板块前 {} 条数据...", category.getDesc(), limit);
@@ -81,16 +86,19 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
         List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
         if (category.getCode() == HeatPointCategory.HOT_SEARCH.getCode() && hotSearchEntityList != null) {
             aggregate.setHotSearchEntityList(hotSearchEntityList.subList(0, limit));
+            log.info("获取完成, 热点分析聚合信息: {}", JSON.toJSONString(aggregate));
             return aggregate;
         }
         List<WbEntertainmentEntity> entertainmentEntityList = aggregate.getEntertainmentEntityList();
         if (category.getCode() == HeatPointCategory.ENTERTAINMENT.getCode() && entertainmentEntityList != null) {
             aggregate.setEntertainmentEntityList(entertainmentEntityList.subList(0, limit));
+            log.info("获取完成, 热点分析聚合信息: {}", JSON.toJSONString(aggregate));
             return aggregate;
         }
         List<WbNewsEntity> newsEntityList = aggregate.getNewsEntityList();
         if (category.getCode() == HeatPointCategory.NEWS.getCode() && newsEntityList != null) {
             aggregate.setNewsEntityList(newsEntityList.subList(0, limit));
+            log.info("获取完成, 热点分析聚合信息: {}", JSON.toJSONString(aggregate));
             return aggregate;
         }
         log.warn("category 类别不合法");
@@ -104,11 +112,13 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
-    @Tool(description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表, 列表中的一个元素代表一个帖子")
+    @Tool(name = "queryHeatPointDetailByUrl", description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表, 列表中的一个元素代表一个帖子")
     public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url) {
         try {
             log.info("正在获取 URL: {} 的热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8));
-            return webPort.queryHeatPointsDetail(url);
+            List<HeatPointDetailEntity> heatPointDetailEntityList = webPort.queryHeatPointsDetail(url);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
+            return heatPointDetailEntityList;
         } catch (IOException e) {
             log.error("获取热点细节信息异常! 异常信息: {}", e.getMessage(), e);
         }
@@ -123,11 +133,13 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
-    @Tool(description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表的前 limit 条, 列表中的一个元素代表一个帖子")
+    @Tool(name = "queryHeatPointDetailByUrlLimit", description = "根据提供的 URL 查询一个热点所属的帖子的详细信息, 返回热点详细信息列表的前 limit 条, 列表中的一个元素代表一个帖子")
     public List<HeatPointDetailEntity> queryHeatPointDetailByUrl(String url, int limit) {
         try {
             log.info("正在获取 URL: {} 的前 {} 热点细节信息...", URLDecoder.decode(url, StandardCharsets.UTF_8), limit);
-            return webPort.queryHeatPointsDetail(url, limit);
+            List<HeatPointDetailEntity> heatPointDetailEntityList = webPort.queryHeatPointsDetail(url, limit);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
+            return heatPointDetailEntityList;
         } catch (IOException e) {
             log.error("获取热点细节信息异常! 异常信息: {}", e.getMessage(), e);
         }
@@ -155,6 +167,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
         createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, HeatPointCategory.HOT_SEARCH);
         createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, HeatPointCategory.ENTERTAINMENT);
         createUrlAndQuery(newsEntityList, heatPointDetailEntityList, HeatPointCategory.NEWS);
+        log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
         return heatPointDetailEntityList;
     }
 
@@ -182,16 +195,19 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
             // 查询热搜板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(hotSearchEntityTopList, heatPointDetailEntityList, category);
             createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, category);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         if (category.getCode() == HeatPointCategory.ENTERTAINMENT.getCode() && entertainmentEntityList != null) {
             // 查询文娱板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, category);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         if (category.getCode() == HeatPointCategory.NEWS.getCode() && newsEntityList != null) {
             // 查询要闻板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(newsEntityList, heatPointDetailEntityList, category);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         // 无法匹配类别, 则返回 null
@@ -207,7 +223,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
-    @Tool(description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 limit 条帖子详细信息")
+    @Tool(name = "queryHeatPointDetailByCategoryLimit", description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 limit 条帖子详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(AnalyseHeatPointAggregate aggregate, HeatPointCategory category, int limit) {
         List<WbHotSearchEntity> hotSearchEntityTopList = aggregate.getHotSearchEntityTopList();
         List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
@@ -220,16 +236,19 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
             // 查询热搜板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(hotSearchEntityTopList, heatPointDetailEntityList, category, limit);
             createUrlAndQuery(hotSearchEntityList, heatPointDetailEntityList, category, limit);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         if (category.getCode() == HeatPointCategory.ENTERTAINMENT.getCode() && entertainmentEntityList != null) {
             // 查询文娱板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(entertainmentEntityList, heatPointDetailEntityList, category, limit);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         if (category.getCode() == HeatPointCategory.NEWS.getCode() && newsEntityList != null) {
             // 查询要闻板块的热点细节信息然后装入 heatPointDetailEntityList 列表中
             createUrlAndQuery(newsEntityList, heatPointDetailEntityList, category, limit);
+            log.info("获取完成, 热点详细信息列表: {}", JSON.toJSONString(heatPointDetailEntityList));
             return heatPointDetailEntityList;
         }
         // 无法匹配类别, 则返回 null

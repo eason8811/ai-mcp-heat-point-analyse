@@ -13,7 +13,7 @@ logging:
   charset:
     file: UTF-8
   file:
-    name: ${spring.application.name}:${spring.application.version}_log.log
+    name: ${spring.application.name}_${spring.application.version}_log.log
 
 server:
   servlet:
@@ -21,7 +21,7 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-  port: 8081
+  port: 8082
 
 
 heat-point:
