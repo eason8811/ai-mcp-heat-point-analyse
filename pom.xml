@@ -10,22 +10,17 @@
     </parent>
     <groupId>xin.eason</groupId>
     <artifactId>ai-mcp-heat-point-analyse</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>ai-mcp-heat-point-analyse</name>
     <description>ai-mcp-heat-point-analyse</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
+
     <developers>
-        <developer/>
+        <developer>
+            <name>Eason</name>
+            <email>3220563569@qq.com</email>
+        </developer>
     </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+
     <properties>
         <java.version>17</java.version>
         <spring-ai.version>1.0.0</spring-ai.version>
@@ -112,6 +107,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>ai-mcp-heat-point-analyse</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

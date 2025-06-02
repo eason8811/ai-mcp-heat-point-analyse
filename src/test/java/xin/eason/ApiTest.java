@@ -9,7 +9,11 @@ import retrofit2.Response;
 import xin.eason.api.IHeatPointAnalyseService;
 import xin.eason.domain.adapter.port.IWebPort;
 import xin.eason.domain.model.aggregate.AnalyseHeatPointAggregate;
+import xin.eason.domain.model.aggregate.HeatPointAggregateRequest;
 import xin.eason.domain.model.entity.HeatPointDetailEntity;
+import xin.eason.domain.model.entity.WbEntertainmentEntity;
+import xin.eason.domain.model.entity.WbHotSearchEntity;
+import xin.eason.domain.model.entity.WbNewsEntity;
 import xin.eason.domain.model.enums.HeatPointCategory;
 import xin.eason.infrastructure.dto.WbEntertainmentResponseDTO;
 import xin.eason.infrastructure.dto.WbHotSearchResponseDTO;
@@ -142,7 +146,19 @@ public class ApiTest {
         log.info("获取热点信息成功!");
         log.info("结果: \n {}", JSON.toJSONString(aggregate));
 
-        List<HeatPointDetailEntity> heatPointDetailEntityList = heatPointAnalyseService.queryHeatPointDetailByCategory(aggregate, HeatPointCategory.ENTERTAINMENT);
+        List<WbHotSearchEntity> hotSearchEntityList = aggregate.getHotSearchEntityList();
+        List<WbEntertainmentEntity> entertainmentEntityList = aggregate.getEntertainmentEntityList();
+        List<WbNewsEntity> newsEntityList = aggregate.getNewsEntityList();
+        HeatPointAggregateRequest aggregateRequest = new HeatPointAggregateRequest();
+
+        if (hotSearchEntityList != null)
+            aggregateRequest.setHotSearchTopicList(hotSearchEntityList.stream().map(WbHotSearchEntity::getTopic).toList());
+        if (entertainmentEntityList != null)
+            aggregateRequest.setEntertainmentTopicList(entertainmentEntityList.stream().map(WbEntertainmentEntity::getTopic).toList());
+        if (newsEntityList != null)
+            aggregateRequest.setNewsTopicList(newsEntityList.stream().map(WbNewsEntity::getTopic).toList());
+
+        List<HeatPointDetailEntity> heatPointDetailEntityList = heatPointAnalyseService.queryHeatPointDetailByCategory(aggregateRequest, HeatPointCategory.ENTERTAINMENT);
         log.info("查询热点细节信息成功!");
         log.info("结果: \n {}", JSON.toJSONString(heatPointDetailEntityList));
     }

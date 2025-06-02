@@ -38,7 +38,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热搜数据响应对象
      */
     @Override
-    @Tool(description = "查询所有板块的热点数据, 并返回热点分析聚合, 其中包含了热搜, 文娱, 要闻三个板块的热点列表, 以及一个热搜板块的置顶热点列表, 可以用于初步获取当前的热点信息")
+    @Tool(name = "queryAllHeatPoints", description = "查询所有板块的热点数据, 并返回热点分析聚合, 其中包含了热搜, 文娱, 要闻三个板块的热点列表, 以及一个热搜板块的置顶热点列表, 可以用于初步获取当前的热点信息 (用户没有特别要求的情况下不适用该方法)")
     public AnalyseHeatPointAggregate queryAllHeatPoints() {
         try {
             log.info("正在获取所有热点数据...");
@@ -154,7 +154,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
-    @Tool(description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息, 可以用于进一步获取对于这个热点社会各界发表的帖子和观点的详细信息")
+    @Tool(name = "queryHeatPointDetail", description = "根据提供的热点分析聚合对象, 提取其中各个不同板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息, 可以用于进一步获取对于这个热点社会各界发表的帖子和观点的详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetail(HeatPointAggregateRequest requestAggregate) {
         List<String> hotSearchTopicList = requestAggregate.getHotSearchTopicList();
         List<String> entertainmentTopicList = requestAggregate.getEntertainmentTopicList();
@@ -179,7 +179,7 @@ public class WbHeatPointAnalyseService implements IHeatPointAnalyseService {
      * @return 热点详细信息对象列表
      */
     @Override
-    @Tool(description = "根据提供的热点分析聚合对象和热点板块类别, 提取其中指定板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息, 可以用于进一步获取对于这个热点社会各界发表的帖子和观点的详细信息")
+    @Tool(name = "queryHeatPointDetailByCategory", description = "根据提供的热点分析聚合对象和热点板块类别, 提取其中指定板块的所有热点信息, 并自动查询这些热点所属的前 10 条帖子详细信息, 可以用于进一步获取对于这个热点社会各界发表的帖子和观点的详细信息")
     public List<HeatPointDetailEntity> queryHeatPointDetailByCategory(HeatPointAggregateRequest requestAggregate, HeatPointCategory category) {
         if (requestAggregate == null)
             return null;
